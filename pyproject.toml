@@ -1,0 +1,17 @@
+[project]
+name = "tides-end-api"
+version = "0.1.0"
+description = "Tide's End Digital Booking Platform API"
+authors = [
+    {name = "Brian Henry",email = "brianhenrytech@gmail.com"}
+]
+readme = "README.md"
+requires-python = ">=3.13,<4.0"
+dependencies = [
+    "pillow (>=11.2.1,<12.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
