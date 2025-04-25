@@ -18,6 +18,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from api.serializers import CamperProfileSerializer
+from api.models import Camper
 
 
 class CamperProfileViewSet(ViewSet):

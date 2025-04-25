@@ -25,18 +25,15 @@ class AuthViewSet(ViewSet):
                 {"error": "Username and password are required."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        if "@" in username:
-            try:
-                user = User.objects.get(email=username)
-                username = user.username
-            except User.DoesNotExist:
-                return Response(
-                    {"error": "Invalid credentials."},
-                    status=status.HTTP_401_UNAUTHORIZED,
-                )
-            authenticated_user = authenticate(username=username, password=password)
-        else:
-            authenticated_user = authenticate(username=username, password=password)
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            return Response(
+                {"error": "Invalid credentials."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
+        authenticated_user = authenticate(username=username, password=password)
+
         if authenticated_user is not None:
             token, _ = Token.objects.get_or_create(user=authenticated_user)
             auth_login(request, authenticated_user)
