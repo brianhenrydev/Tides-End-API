@@ -12,7 +12,8 @@ dependencies = [
     "django-safedelete (>=1.4.1,<2.0.0)",
     "django-cors-headers (>=4.7.0,<5.0.0)",
     "djangorestframework (>=3.16.0,<4.0.0)",
-    "wheel (>=0.45.1,<0.46.0)"
+    "wheel (>=0.45.1,<0.46.0)",
+    "decouple (>=0.0.7,<0.0.8)"
 ]
 
 
