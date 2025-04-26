@@ -1,13 +1,15 @@
+from os import stat
 from rest_framework.viewsets import ViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
-from api.models import Campsite, Reservation
+from api.models import Campsite, Reservation, Camper
 from rest_framework import status
 from datetime import date, timedelta
 from calendar import monthrange
 
 from api.serializers import CampsiteSerializer
+from api.serializers.camper_serializers import ReservationSerializer
 
 
 class CampsiteViewSet(ViewSet):
@@ -46,7 +48,7 @@ class CampsiteViewSet(ViewSet):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=["get"], url_path="availability")
-    def availability(self,request, pk=None):
+    def availability(self, request, pk=None):
         # Get the campsite object
         campsite = get_object_or_404(Campsite, id=pk)
 
@@ -98,3 +100,86 @@ class CampsiteViewSet(ViewSet):
         # Return the available dates as a JSON response
         return Response(all_dates, status=status.HTTP_200_OK)
 
+    @action(detail=True, methods=["post"], url_path="reserve")
+    def reserve(self, request, pk=None):
+        """Reservation for campsite"""
+        try:
+            check_in_date = request.data.get("check_in_date", "")
+            check_out_date = request.data.get("check_out_date", "")
+            number_of_guests = request.data.get("number_of_guests", "")
+
+            if not check_in_date or not check_out_date or not number_of_guests:
+                return Response(
+                    {"message": "Missing parameters"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            try:
+                number_of_guests = int(number_of_guests)
+            except ValueError:
+                return Response(
+                    {"message": "Invalid number of guests"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            try:
+                check_in_date = date.fromisoformat(check_in_date)
+                check_out_date = date.fromisoformat(check_out_date)
+            except ValueError:
+                return Response(
+                    {"message": "Invalid date format. Use YYYY-MM-DD"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            if check_in_date >= check_out_date:
+                return Response(
+                    {"message": "Check-in date must be before check-out date"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        except Exception as e:
+            print(f"Error getting parameters: {e}")
+            return Response(
+                {"message": "Error getting parameters"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            campsite = get_object_or_404(Campsite, id=pk)
+            camper = Camper.objects.get(user=request.auth.user)
+        except Campsite.DoesNotExist:
+            return Response(
+                {"message": "Campsite not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Camper.DoesNotExist:
+            return Response(
+                {"message": "Camper not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            print(f"Error getting camper/campsite: {e}")
+            return Response(
+                {"message": "Error getting camper/campsite"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            reservation = Reservation(
+                campsite=campsite,
+                camper=camper,
+                check_in_date=check_in_date,
+                check_out_date=check_out_date,
+                number_of_guests=number_of_guests,
+            )
+            reservation.save()
+
+            serialized_res = ReservationSerializer(
+                reservation, context={"request": request}
+            )
+
+            return Response(serialized_res.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            print(f"Error creating reservation: {e}")
+            return Response(
+                {"message": f"Couldn't create Reservation: {e}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )

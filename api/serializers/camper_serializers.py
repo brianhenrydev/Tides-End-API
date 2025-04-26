@@ -22,6 +22,16 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
     """Serializer for PaymentMethod model."""
 
     masked_card_number = serializers.SerializerMethodField()
+    expiration_date = serializers.SerializerMethodField()
+
+    def get_expiration_date(self, obj):
+            """Return the expiration date in MM/YY format."""
+            try:
+                # Assuming expiration_date is a date object
+                return obj.expiration_date.strftime('%m/%y')
+            except (AttributeError, TypeError):
+                # Handle cases where the expiration date is not accessible or not a date
+                return ""
 
     def get_masked_card_number(self, obj):
         """Return the masked card number."""
@@ -34,6 +44,7 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
     class Meta:
         model = PaymentMethod
         fields = [
+            "id",
             "issuer",
             "masked_card_number",
             "cardholder_name",
