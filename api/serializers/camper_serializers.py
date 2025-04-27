@@ -1,3 +1,4 @@
+from api.serializers.campsite_serializers import CampsiteSerializer
 from rest_framework import serializers
 from api.models import Camper, PaymentMethod, Reservation
 from django.contrib.auth.models import User
@@ -5,6 +6,7 @@ from django.contrib.auth.models import User
 
 class ReservationSerializer(serializers.ModelSerializer):
     """Serializer for Reservation model."""
+    campsite = serializers.SerializerMethodField()
 
     class Meta:
         model = Reservation
@@ -16,6 +18,14 @@ class ReservationSerializer(serializers.ModelSerializer):
             "status",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
+        depth = 7
+
+
+    def get_campsite(self, obj):
+        """Get campsite for reservation"""
+        
+        return CampsiteSerializer(obj.campsite, many=False, context=self.context ).data
+
 
 
 class PaymentMethodSerializer(serializers.ModelSerializer):
@@ -76,7 +86,7 @@ class CamperProfileSerializer(serializers.ModelSerializer):
         reservations = obj.reservations.filter(
             camper=obj,
         ).order_by("-check_in_date")
-        return ReservationSerializer(reservations, many=True).data
+        return ReservationSerializer(reservations, many=True, context=self.context ).data
 
     def get_payment_methods(self, obj):
         """Get the payment methods for the camper."""
@@ -95,3 +105,4 @@ class CamperProfileSerializer(serializers.ModelSerializer):
             "phone_number",
         ]
         read_only_fields = ["id", "user"]
+        depth=5

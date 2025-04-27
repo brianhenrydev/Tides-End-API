@@ -33,11 +33,14 @@ class CampsiteImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = CampsiteImage
         fields = ["id", "image_url"]
-        depth = 0
+        depth = 1
+
 
 
 class CampsiteSerializer(serializers.ModelSerializer):
+
     images = CampsiteImageSerializer(many=True, read_only=True)
+
     reviews = serializers.SerializerMethodField()
     """Serializer for Campsite model."""
 
