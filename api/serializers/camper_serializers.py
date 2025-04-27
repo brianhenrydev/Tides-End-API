@@ -25,13 +25,13 @@ class PaymentMethodSerializer(serializers.ModelSerializer):
     expiration_date = serializers.SerializerMethodField()
 
     def get_expiration_date(self, obj):
-            """Return the expiration date in MM/YY format."""
-            try:
-                # Assuming expiration_date is a date object
-                return obj.expiration_date.strftime('%m/%y')
-            except (AttributeError, TypeError):
-                # Handle cases where the expiration date is not accessible or not a date
-                return ""
+        """Return the expiration date in MM/YY format."""
+        try:
+            # Assuming expiration_date is a date object
+            return obj.expiration_date.strftime("%m/%y")
+        except (AttributeError, TypeError):
+            # Handle cases where the expiration date is not accessible or not a date
+            return ""
 
     def get_masked_card_number(self, obj):
         """Return the masked card number."""
@@ -74,7 +74,7 @@ class CamperProfileSerializer(serializers.ModelSerializer):
     def get_reservation_history(self, obj):
         """Get the reservation history for the camper."""
         reservations = obj.reservations.filter(
-            camper=obj, status__in=["completed", "pending"]
+            camper=obj,
         ).order_by("-check_in_date")
         return ReservationSerializer(reservations, many=True).data
 
@@ -95,4 +95,3 @@ class CamperProfileSerializer(serializers.ModelSerializer):
             "phone_number",
         ]
         read_only_fields = ["id", "user"]
-

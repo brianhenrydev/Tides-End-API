@@ -37,6 +37,7 @@ class Reservation(models.Model):
         choices=[
             ("pending", "Pending"),
             ("confirmed", "Confirmed"),
+            ("completed", "Completed"),
             ("cancelled", "Cancelled"),
         ],
         default="pending",
@@ -47,4 +48,3 @@ class Reservation(models.Model):
 
     def __str__(self):
         return f"Reservation  {self.check_in_date} to {self.check_out_date}"
-
