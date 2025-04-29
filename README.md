@@ -8,10 +8,9 @@ Tide’s End is a modern digital booking platform designed for seamless reservat
 
 - **User-friendly Booking Interface:** Effortlessly search, select, and book your ideal beachfront camping spot.
 - **Real-time Availability:** View up-to-date availability for all campground sites.
-- **Secure Payment Processing:** Enjoy a safe and secure payment gateway for all transactions.
+- **Secure Payment Processing:** *Roadmapped but not implemented yet. Enjoy a safe and secure payment gateway for all transactions in the future.*
 - **Responsive Design:** Experience an optimal viewing on both mobile and desktop devices.
-- **Efficient Campground Management Tools:** Administrators can easily manage reservations, view analytics, and update campsite information.
-
+- **Efficient Campground Management Tools:** *Roadmapped but not implemented yet. Administrators will be able to easily manage reservations, view analytics, and update campsite information in the future.*
 ## Getting Started
 
 To get started with Tide’s End API, follow these steps:

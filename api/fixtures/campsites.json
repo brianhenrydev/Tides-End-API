@@ -1,0 +1,100 @@
+[
+    {
+        "model": "api.campsite",
+        "pk": 5,
+        "fields": {
+            "site_number": "B005",
+            "description": "Beachfront campsite with stunning ocean views.",
+            "coordinates": "34.0522,-118.2437",
+            "price_per_night": "50.00",
+            "max_occupancy": 4,
+            "available": true,
+            "created_at": "2023-10-01T12:00:00Z",
+            "updated_at": "2023-10-01T12:00:00Z"
+        }
+    },
+    {
+        "model": "api.campsite",
+        "pk": 6,
+        "fields": {
+            "site_number": "B006",
+            "description": "Campsite located near a sandy beach with great swimming.",
+            "coordinates": "34.0522,-118.2438",
+            "price_per_night": "60.00",
+            "max_occupancy": 6,
+            "available": false,
+            "created_at": "2023-10-02T12:00:00Z",
+            "updated_at": "2023-10-02T12:00:00Z"
+        }
+    },
+    {
+        "model": "api.campsite",
+        "pk": 7,
+        "fields": {
+            "site_number": "B007",
+            "description": "Campsite with direct access to the beach and fire pits.",
+            "coordinates": "34.0522,-118.2439",
+            "price_per_night": "55.00",
+            "max_occupancy": 8,
+            "available": true,
+            "created_at": "2023-10-03T12:00:00Z",
+            "updated_at": "2023-10-03T12:00:00Z"
+        }
+    },
+    {
+        "model": "api.campsite",
+        "pk": 8,
+        "fields": {
+            "site_number": "B008",
+            "description": "Secluded beach campsite perfect for relaxation.",
+            "coordinates": "34.0522,-118.2440",
+            "price_per_night": "45.00",
+            "max_occupancy": 5,
+            "available": true,
+            "created_at": "2023-10-04T12:00:00Z",
+            "updated_at": "2023-10-04T12:00:00Z"
+        }
+    },
+    {
+        "model": "api.campsite",
+        "pk": 9,
+        "fields": {
+            "site_number": "B009",
+            "description": "Campsite with volleyball courts and picnic areas.",
+            "coordinates": "34.0522,-118.2441",
+            "price_per_night": "70.00",
+            "max_occupancy": 4,
+            "available": false,
+            "created_at": "2023-10-05T12:00:00Z",
+            "updated_at": "2023-10-05T12:00:00Z"
+        }
+    },
+    {
+        "model": "api.campsite",
+        "pk": 10,
+        "fields": {
+            "site_number": "B010",
+            "description": "Campsite with great sunset views over the ocean.",
+            "coordinates": "34.0522,-118.2442",
+            "price_per_night": "65.00",
+            "max_occupancy": 6,
+            "available": true,
+            "created_at": "2023-10-06T12:00:00Z",
+            "updated_at": "2023-10-06T12:00:00Z"
+        }
+    },
+    {
+        "model": "api.campsite",
+        "pk": 11,
+        "fields": {
+            "site_number": "B011",
+            "description": "Campsite with a boardwalk leading to the beach.",
+            "coordinates": "34.0522,-118.2443",
+            "price_per_night": "75.00",
+            "max_occupancy": 8,
+            "available": true,
+            "created_at": "2023-10-07T12:00:00Z",
+            "updated_at": "2023-10-07T12:00:00Z"
+        }
+    }
+]
