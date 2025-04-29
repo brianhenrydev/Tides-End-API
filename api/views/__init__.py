@@ -3,3 +3,4 @@
 from .auth_vewset import AuthViewSet
 from .camper_viewset import CamperProfileViewSet
 from .campsite_viewset import CampsiteViewSet
+from .report_viewset import ReportViewSet

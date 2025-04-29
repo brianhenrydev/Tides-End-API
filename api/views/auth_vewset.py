@@ -1,3 +1,4 @@
+from api.models.camper import Camper
 from rest_framework.viewsets import ViewSet
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -38,7 +39,11 @@ class AuthViewSet(ViewSet):
             token, _ = Token.objects.get_or_create(user=authenticated_user)
             auth_login(request, authenticated_user)
             return Response(
-                {"valid": True, "token": token.key, "id": authenticated_user.id},
+                {
+                    "valid": True,
+                    "token": token.key,
+                    "id": authenticated_user.id,
+                },
                 status=status.HTTP_200_OK,
             )
         else:
@@ -50,14 +55,13 @@ class AuthViewSet(ViewSet):
     def register(self, request):
         """Handle user registration."""
         # Load the JSON string of the request body into a dict
-        req_body = json.loads(request.body.decode("utf-8"))
+        req_body = request.data
 
         # Create a new user by invoking the `create_user` helper method
         # on Django's built-in User model
         if User.objects.filter(username=req_body["username"]).exists():
-            return HttpResponse(
+            return Response(
                 {"error": "Username already exists"},
-                content_type="application/json",
                 status=status.HTTP_400_BAD_REQUEST,
             )
         new_user = User.objects.create_user(
@@ -71,13 +75,8 @@ class AuthViewSet(ViewSet):
 
         camper = Camper.objects.create(
             user=new_user,
-            age=data.get("age"),
-            phone_number=data.get("phone_number"),
-            address=data.get("address"),
-            city=data.get("city"),
-            state=data.get("state"),
-            zip_code=data.get("zip_code"),
-            country=data.get("country"),
+            age=req_body.get("age"),
+            phone_number=req_body.get("phone_number"),
         )  # Assuming Camper has a OneToOneField with User
 
         # Commit the user to the database by saving it

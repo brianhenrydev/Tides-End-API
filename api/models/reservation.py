@@ -46,5 +46,12 @@ class Reservation(models.Model):
     # Updated at timestamp
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def total_price(self):
+        """gets total price of reservation"""
+        stay_duration = (self.check_out_date - self.check_in_date).days
+        price_per_night = self.campsite.price_per_night
+        return round(stay_duration * price_per_night,2)
+
     def __str__(self):
         return f"Reservation  {self.check_in_date} to {self.check_out_date}"
