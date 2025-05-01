@@ -12,6 +12,17 @@ from api.serializers.camper_serializers import ReservationSerializer
 
 
 class CampsiteViewSet(ViewSet):
+    def update(self,request,pk=None):
+        """update campsite"""
+        try:
+            campsite_to_update = Campsite.objects.get(pk=pk)
+            serializer = CampsiteSerializer(campsite_to_update, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response("test",status=status.HTTP_201_CREATED)
+
+        except:
+            return Response("oops",status=status.HTTP_400_BAD_REQUEST)
 
     def list(self, request):
         """
@@ -48,10 +59,8 @@ class CampsiteViewSet(ViewSet):
 
     @action(detail=True, methods=["get"], url_path="availability")
     def availability(self, request, pk=None):
-        # Get the campsite object
         campsite = get_object_or_404(Campsite, id=pk)
 
-        # Get query parameters for month and year
         today = date.today()
         month = int(request.query_params.get("month", today.month))
         year = int(request.query_params.get("year", today.year))
@@ -61,14 +70,12 @@ class CampsiteViewSet(ViewSet):
         _, days_in_month = monthrange(year, month)
         end_date = start_date + timedelta(days=days_in_month)
 
-        # Get all reservations for the campsite in the date range
         reservations = Reservation.objects.filter(
             campsite=campsite,
             check_in_date__lt=end_date,
             check_out_date__gte=start_date,
         )
 
-        # Create a set of all reserved dates
         reserved_dates = set()
         for reservation in reservations:
             current_date = reservation.check_in_date
@@ -76,7 +83,6 @@ class CampsiteViewSet(ViewSet):
                 reserved_dates.add(current_date)
                 current_date += timedelta(days=1)
 
-        # Create a list of all dates in the range with their availability
         all_dates = []
 
         current_date = start_date

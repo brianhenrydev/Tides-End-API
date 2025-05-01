@@ -10,6 +10,8 @@ from django.db.models.functions import ExtractMonth
 from collections import defaultdict
 import datetime
 
+from api.serializers.camper_serializers import ReservationSerializer
+
 class ReservationReportSerializer(serializers.ModelSerializer):
     """serializer for reservation report"""
     duration = serializers.SerializerMethodField()
@@ -45,8 +47,9 @@ class ReportViewSet(ViewSet):
 
         return Response({
                 "links": [
-            { "endpoint": "admin/report/sales", "name": "Sales Report" },
-            { "endpoint": "admin/analytics/reservations", "name": "Reservation Analytics" },
+                { "endpoint": "admin/report/sales", "name": "Sales Report", "implemented": True },
+            { "endpoint": "admin/analytics/reservations", "name": "Reservation Analytics", "implemented": False },
+            { "endpoint": "admin/manage/campsites", "name": "Manage Sites", "implemented": True },
         ],
             "reservations": reservations.data
         },
@@ -55,7 +58,12 @@ class ReportViewSet(ViewSet):
     @action(detail=False, methods=["get"], url_path="sales")
     def sales_report(self, request ):
         """handles sales report data"""
-        return Response("hi",status=status.HTTP_200_OK)
+        all_completed_reservations = Reservation.objects.filter(status="completed")
+        data = ReservationSerializer(all_completed_reservations, many=True)
+        total_sales = round(sum(res["total_price"] for res in data.data),2)
+        return Response({
+            "total_sales": total_sales,
+        },status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="reservations")
     def reservation_report(self, request):

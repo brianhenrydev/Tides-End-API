@@ -12,6 +12,7 @@ Date: [2025-04-24]
 
 from inspect import stack
 from datetime import datetime
+from django.contrib.auth.models import User
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
@@ -44,6 +45,7 @@ class CamperProfileViewSet(ViewSet):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticatedOrReadOnly]
 
+
     def list(self, request):
         """Handle GET requests for camper profile."""
         if request.user.is_anonymous:
@@ -69,27 +71,45 @@ class CamperProfileViewSet(ViewSet):
 
     def update(self, request, pk=None):
         """Handle PUT requests to update an existing camper profile."""
+        
+        user = request.auth.user
+    
+        # Attempt to retrieve the camper profile
         try:
-            camper = Camper.objects.get(user=request.auth.user)
+            camper = Camper.objects.get(user=user)
         except Camper.DoesNotExist:
             return Response(
                 {"message": "Camper profile not found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
-
-        if request.auth.user != camper.user:
-            return Response(
-                {"message": "You do not have permission to update this profile."},
-                status=status.HTTP_403_FORBIDDEN,
-            )
-
-        serializer = self.serializer_class(
-            camper, data=request.data, partial=True, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+        # Extract data from the request
+        new_first_name = request.data.get("first_name")
+        new_username = request.data.get("username")
+        new_last_name = request.data.get("last_name")
+        new_email = request.data.get("email")
+        new_age = request.data.get("age")
+        new_phone_number = request.data.get("phone_number")
+    
+        # Update camper profile fields only if new values are provided
+        if new_age is not None:
+            camper.age = new_age
+        if new_phone_number is not None:
+            camper.phone_number = new_phone_number
+        camper.save()
+    
+        # Update user profile fields only if new values are provided
+        if new_username is not None:
+            user.username = new_username
+        if new_first_name is not None:
+            user.first_name = new_first_name
+        if new_last_name is not None:
+            user.last_name = new_last_name
+        if new_email is not None:
+            user.email = new_email
+        user.save()
+    
+        return Response({"message": "Camper profile updated successfully."}, status=status.HTTP_200_OK)
 
     def destroy(self, request):
         """Handle DELETE requests to delete a camper profile."""
