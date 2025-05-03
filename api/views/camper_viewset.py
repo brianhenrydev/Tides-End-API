@@ -13,6 +13,7 @@ Date: [2025-04-24]
 from inspect import stack
 from datetime import datetime
 from django.contrib.auth.models import User
+from django.db.models.functions import Lower
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
@@ -167,7 +168,7 @@ class CamperProfileViewSet(ViewSet):
         is_default = request.data.get("is_default", False)
 
         # You could perform additional validation here (e.g., card number format, expiration date, etc.).
-        if not issuer or issuer not in ["visa", "masterCard", "amex", "discover"]:
+        if not issuer or issuer.lower() not in ["visa", "mastercard", "amex", "discover"]:
             return Response(
                 {"detail": "A valid issuer is required (Visa, MasterCard, Amex)."},
                 status=status.HTTP_400_BAD_REQUEST,

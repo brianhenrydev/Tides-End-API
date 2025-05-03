@@ -7,22 +7,118 @@ from rest_framework import status
 from datetime import date, timedelta
 from calendar import monthrange
 
+from api.models.amenities import Amenity, CampsiteAmenity
+from api.models.review import Review
 from api.serializers import CampsiteSerializer
-from api.serializers.camper_serializers import ReservationSerializer
+from api.serializers import ReservationSerializer, ReviewSerializer
+from api.serializers.campsite_serializers import AmenitySerializer
 
 
 class CampsiteViewSet(ViewSet):
-    def update(self,request,pk=None):
-        """update campsite"""
+    def update(self, request, pk=None):
+        """Update campsite details including amenities"""
         try:
-            campsite_to_update = Campsite.objects.get(pk=pk)
-            serializer = CampsiteSerializer(campsite_to_update, data=request.data)
-            if serializer.is_valid():
-                serializer.save()
-                return Response("test",status=status.HTTP_201_CREATED)
+            fields_to_update = [
+                "site_number",
+                "description",
+                "price_per_night",
+                "max_occupancy",
+                "coordinates",
+                "available",
+            ]
+            campsite_data = {
+                key: request.data.get(key)
+                for key in fields_to_update
+                if key in request.data
+            }
 
-        except:
-            return Response("oops",status=status.HTTP_400_BAD_REQUEST)
+            # Get the list of amenity IDs from the request
+            amenity_ids = request.data.get("amenities", [])
+
+            # Convert to a list of integers if it's not already
+            if isinstance(amenity_ids, list) and all(
+                isinstance(item, int) for item in amenity_ids
+            ):
+                # List is already in correct format
+                pass
+            elif (
+                isinstance(amenity_ids, list)
+                and len(amenity_ids) > 0
+                and isinstance(amenity_ids[0], dict)
+            ):
+                # Extract IDs from dict objects
+                amenity_ids = [
+                    amenity["id"] for amenity in amenity_ids if "id" in amenity
+                ]
+            else:
+                # Handle any other format or empty list
+                amenity_ids = []
+
+            campsite_to_update = Campsite.objects.get(pk=pk)
+
+            serializer = CampsiteSerializer(
+                campsite_to_update, data=campsite_data, partial=True
+            )
+
+            if serializer.is_valid():
+                try:
+                    # Get existing amenities
+                    current_amenities = CampsiteAmenity.objects.filter(
+                        campsite=campsite_to_update
+                    )
+                    current_amenity_ids = set(ca.amenity.id for ca in current_amenities)
+
+                    # Convert the incoming amenity IDs to a set
+                    new_amenity_ids = set(amenity_ids)
+
+                    # Find amenities to remove
+                    amenities_to_remove = current_amenity_ids - new_amenity_ids
+                    for amenity_id in amenities_to_remove:
+                        CampsiteAmenity.objects.filter(
+                            campsite=campsite_to_update, amenity_id=amenity_id
+                        ).delete()
+
+                    # Find amenities to add
+                    amenities_to_add = new_amenity_ids - current_amenity_ids
+                    for amenity_id in amenities_to_add:
+                        # Make sure the amenity exists
+                        try:
+                            amenity = Amenity.objects.get(id=amenity_id)
+                            CampsiteAmenity.objects.create(
+                                campsite=campsite_to_update, amenity=amenity
+                            )
+                        except Amenity.DoesNotExist:
+                            return Response(
+                                {
+                                    "detail": f"Amenity with ID {amenity_id} does not exist"
+                                },
+                                status=status.HTTP_400_BAD_REQUEST,
+                            )
+
+                    # Save the campsite updates
+                    updated_campsite = serializer.save()
+
+                    return Response(
+                        CampsiteSerializer(
+                            updated_campsite, context={"request": request}
+                        ).data,
+                        status=status.HTTP_200_OK,
+                    )
+                except Exception as ex:
+                    return Response(
+                        {"detail": f"Could not update amenities: {str(ex)}"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Campsite.DoesNotExist:
+            return Response(
+                {"detail": "Campsite not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as ex:
+            return Response(
+                {"detail": f"Error updating campsite: {str(ex)}"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
     def list(self, request):
         """
@@ -188,3 +284,57 @@ class CampsiteViewSet(ViewSet):
                 {"message": f"Couldn't create Reservation: {e}"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
+    @action(detail=True, methods=["post"], url_path="review")
+    def review(self, request, pk=None):
+        try:
+            try:
+                camper = get_object_or_404(Camper, user=request.auth.user)
+            except Camper.DoesNotExist:
+                return Response({"details": "There was a problem getting camper..."})
+            try:
+                comment = request.data.get("comment")
+                rating = request.data.get("rating")
+            except Exception as ex:
+                return Response(
+                    {"details": "There was a problem getting request data..."}
+                )
+            try:
+                campsite = get_object_or_404(Campsite, id=pk)
+            except Campsite.DoesNotExist:
+                return Response({"details": "There was a problem getting campsite..."})
+
+            new_review = Review()
+            new_review.camper = camper
+            new_review.campsite = campsite
+
+            if comment is not None:
+                new_review.comment = comment
+            if rating is not None:
+                new_review.rating = rating
+
+            try:
+                serialized_review = ReviewSerializer(new_review, data=request.data)
+                valid = serialized_review.is_valid()
+                if valid:
+                    serialized_review.save()
+                    return Response(
+                        serialized_review.data, status=status.HTTP_201_CREATED
+                    )
+                return Response(
+                    {"details": "There was a problem creating your review"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            except Exception as ex:
+                return Response(
+                    {"details": ex.args[0]}, status=status.HTTP_400_BAD_REQUEST
+                )
+        except:
+            return Response({"details": "There was a problem..."})
+
+    @action(detail=False, methods=["get", "post"], url_path="amenities")
+    def amenities(self, request, pk=None):
+        am = Amenity.objects.all()
+        sam = AmenitySerializer(am, many=True)
+
+        return Response(sam.data, status=status.HTTP_200_OK)

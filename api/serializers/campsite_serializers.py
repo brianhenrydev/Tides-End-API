@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from api.models import Campsite, Amenity, CampsiteAmenity, amenities
+from api.models import Campsite, Amenity, CampsiteAmenity 
 from api.models import CampsiteImage
 
 from api.models import Review
@@ -59,7 +59,7 @@ class CampsiteSerializer(serializers.ModelSerializer):
 
     def get_reviews(self, obj):
         """Return the reviews for the campsite."""
-        reviews = obj.reviews.all()
+        reviews = obj.reviews.all().order_by('-created_at')
         return ReviewSerializer(reviews, many=True).data
 
     def get_amenities(self,obj):

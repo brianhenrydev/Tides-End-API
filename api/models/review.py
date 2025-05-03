@@ -6,7 +6,7 @@ from .camper import Camper
 
 class Review(models.Model):
     camper = models.ForeignKey(Camper, on_delete=models.CASCADE, related_name="reviews")
-    campground = models.ForeignKey(
+    campsite = models.ForeignKey(
         Campsite, on_delete=models.CASCADE, related_name="reviews"
     )
     rating = models.IntegerField(

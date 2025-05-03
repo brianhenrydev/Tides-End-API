@@ -1,2 +1,2 @@
-from .camper_serializers import CamperProfileSerializer
+from .camper_serializers import CamperProfileSerializer, ReservationSerializer
 from .campsite_serializers import CampsiteSerializer, ReviewSerializer

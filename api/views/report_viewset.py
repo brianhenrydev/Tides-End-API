@@ -48,8 +48,9 @@ class ReportViewSet(ViewSet):
         return Response({
                 "links": [
                 { "endpoint": "admin/report/sales", "name": "Sales Report", "implemented": True },
-            { "endpoint": "admin/analytics/reservations", "name": "Reservation Analytics", "implemented": False },
-            { "endpoint": "admin/manage/campsites", "name": "Manage Sites", "implemented": True },
+                { "endpoint": "admin/analytics/reservations", "name": "Reservation Analytics", "implemented": False },
+                { "endpoint": "admin/manage/campsites", "name": "Manage Sites", "implemented": True },
+
         ],
             "reservations": reservations.data
         },
