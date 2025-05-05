@@ -43,6 +43,7 @@ class PaymentMethod(models.Model):
     cardholder_name = models.CharField(max_length=100)
     expiration_date = models.DateField()
     cvv = models.PositiveIntegerField()
+    billing_name = models.CharField(max_length=255, blank=True, null=True)
     billing_address = models.CharField(max_length=255, blank=True, null=True)
     is_default = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)

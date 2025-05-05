@@ -4,13 +4,14 @@ from rest_framework.permissions import IsAdminUser
 from rest_framework.views import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework import serializers
+from api.models.campsite import Campsite
 from api.models.reservation import Reservation
 from django.db.models import Count
 from django.db.models.functions import ExtractMonth
 from collections import defaultdict
-import datetime
 
 from api.serializers.camper_serializers import ReservationSerializer
+from api.serializers.campsite_serializers import CampsiteSerializer
 
 class ReservationReportSerializer(serializers.ModelSerializer):
     """serializer for reservation report"""
@@ -48,7 +49,7 @@ class ReportViewSet(ViewSet):
         return Response({
                 "links": [
                 { "endpoint": "admin/report/sales", "name": "Sales Report", "implemented": True },
-                { "endpoint": "admin/analytics/reservations", "name": "Reservation Analytics", "implemented": False },
+                { "endpoint": "admin/analytics/reservations", "name": "Reservation Analytics (Not Implemented)", "implemented": True },
                 { "endpoint": "admin/manage/campsites", "name": "Manage Sites", "implemented": True },
 
         ],
@@ -62,8 +63,26 @@ class ReportViewSet(ViewSet):
         all_completed_reservations = Reservation.objects.filter(status="completed")
         data = ReservationSerializer(all_completed_reservations, many=True)
         total_sales = round(sum(res["total_price"] for res in data.data),2)
+
+        most_reserved_campsite = CampsiteSerializer((
+            Campsite.objects.annotate(reservation_count=Count("reservations"))
+            .order_by("-reservation_count")
+            .first()
+        ), many=False,
+           context={"request":request}
+        )
+        least_reserved_campsite = CampsiteSerializer(
+            Campsite.objects.annotate(reservation_count=Count("reservations"))
+            .order_by("reservation_count")
+            .first(),
+            many=False,
+            context={"request":request}
+
+        )
         return Response({
             "total_sales": total_sales,
+            "best_performer": most_reserved_campsite.data,
+            "worst_performer": least_reserved_campsite.data,
         },status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["get"], url_path="reservations")

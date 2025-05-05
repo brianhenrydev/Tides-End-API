@@ -10,10 +10,7 @@ Author: [Brian Henry]
 Date: [2025-04-24]
 """
 
-from inspect import stack
 from datetime import datetime
-from django.contrib.auth.models import User
-from django.db.models.functions import Lower
 from rest_framework import status
 from rest_framework.viewsets import ViewSet
 from rest_framework.response import Response
@@ -313,7 +310,6 @@ class CamperProfileViewSet(ViewSet):
 
         except Exception as e:
             # Log the exception
-            logger.error(f"Error cancelling reservation: {str(e)}")
             return Response(
                 {"error": "An error occurred while processing your request"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
